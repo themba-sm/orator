@@ -7,6 +7,8 @@ import Profile from './screens/Profile.jsx';
 import Progress from './screens/Progress.jsx';
 import Practise, { SpeakNow, Settings } from './screens/Practise.jsx';
 import MemoryHome from './screens/MemoryHome.jsx';
+import ConverseHome from './screens/ConverseHome.jsx';
+import Conversation from './screens/Conversation.jsx';
 import MemoryReview from './screens/MemoryReview.jsx';
 import Playbook from './screens/Playbook.jsx';
 import { todayMemoryReview } from './lib/memory-integration.js';
@@ -30,6 +32,7 @@ function NavBar({ route, navigate }) {
   const items = [
     { key: 'home', label: 'Home', glyph: '·' },
     { key: 'train', label: 'Train', glyph: '»' },
+    { key: 'converse', label: 'Converse', glyph: '@' },
     { key: 'memory', label: 'Memory', glyph: '◆' },
     { key: 'profile', label: 'Patterns', glyph: '≡' },
     { key: 'progress', label: 'Progress', glyph: '↗' },
@@ -52,6 +55,7 @@ export default function App() {
   const [activeExercise, setActiveExercise] = useState(null); // for the training runner
   const [drawn, setDrawn] = useState(null); // for the Speak action
   const [sessionKind, setSessionKind] = useState('daily');
+  const [conversation, setConversation] = useState(null); // { mode, difficulty, coached }
 
   const ready = isOnboarded() && baselineComplete();
 
@@ -100,6 +104,25 @@ export default function App() {
         </div>
       </div>
     );
+  } else if (route === 'converse' && conversation) {
+    screen = (
+      <Conversation
+        key={conversation.mode + conversation.difficulty + conversation.ts}
+        mode={conversation.mode}
+        difficulty={conversation.difficulty}
+        coached={conversation.coached}
+        onExit={() => { setConversation(null); navigate('converse'); }}
+      />
+    );
+  } else if (route === 'converse') {
+    screen = (
+      <ConverseHome
+        onStart={(mode, difficulty, coached) => {
+          setConversation({ mode, difficulty, coached, ts: Date.now() });
+          navigate('converse');
+        }}
+      />
+    );
   } else if (route === 'memory') {
     screen = <MemoryHome onReview={() => navigate('review')} onPlaybook={() => navigate('playbook')} />;
   } else if (route === 'review') {
@@ -143,6 +166,7 @@ export default function App() {
         onSpeak={() => navigate('speak')}
         onProgress={() => navigate('progress')}
         onMemoryReview={() => navigate('review')}
+        onConverse={() => navigate('converse')}
       />
     );
   }

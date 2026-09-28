@@ -31,6 +31,10 @@ const EMPTY_DB = {
   weaknessMemory: [],
   playbookItems: [],
   memorySnapshots: [],
+  /* --- Conversation Simulator --- */
+  conversations: [],
+  conversationTurns: [],
+  conversationReports: [],
   meta: {},
 };
 

@@ -14,7 +14,7 @@ import { WEAKNESS_LIBRARY } from '../lib/analysis.js';
 import { todayMemoryReview } from '../lib/memory-integration.js';
 import { AUTOMATICITY } from '../lib/memory.js';
 
-export default function Dashboard({ onStart, onPractise, onSpeak, onProgress, onMemoryReview }) {
+export default function Dashboard({ onStart, onPractise, onSpeak, onProgress, onMemoryReview, onConverse }) {
   const profile = getProfile();
   const memory = useMemo(() => todayMemoryReview(4), []);
   const user = getCurrentUser();
@@ -105,6 +105,7 @@ export default function Dashboard({ onStart, onPractise, onSpeak, onProgress, on
 
         {/* -------- secondary actions -------- */}
         <div className="quick-actions">
+          <button type="button" className="quick-btn" onClick={onConverse} style={{ gridColumn: '1 / -1', borderColor: 'rgba(198,161,91,0.5)' }}>Enter a conversation</button>
           <button type="button" className="quick-btn" onClick={onPractise}>Practise</button>
           <button type="button" className="quick-btn" onClick={onSpeak}>Speak</button>
           <button type="button" className="quick-btn" onClick={onProgress}>Progress</button>
