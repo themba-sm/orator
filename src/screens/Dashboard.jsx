@@ -11,9 +11,12 @@ import {
   getProfile, getCurrentUser, trainingStreak, trainingHistory, completedAttempts, isOnboarded, baselineComplete,
 } from '../lib/store.js';
 import { WEAKNESS_LIBRARY } from '../lib/analysis.js';
+import { todayMemoryReview } from '../lib/memory-integration.js';
+import { AUTOMATICITY } from '../lib/memory.js';
 
-export default function Dashboard({ onStart, onPractise, onSpeak, onProgress }) {
+export default function Dashboard({ onStart, onPractise, onSpeak, onProgress, onMemoryReview }) {
   const profile = getProfile();
+  const memory = useMemo(() => todayMemoryReview(4), []);
   const user = getCurrentUser();
   const exercise = useMemo(() => todaysExercise(), []);
   const streak = trainingStreak();
@@ -54,6 +57,23 @@ export default function Dashboard({ onStart, onPractise, onSpeak, onProgress }) 
             {exercise.objective} · {exercise.prepSeconds}s preparation · {exercise.speakSeconds}s speaking.
           </p>
           <Btn block onClick={() => onStart(exercise)} style={{ marginTop: 18 }}>Start today's training</Btn>
+        </div>
+
+        {/* -------- MEMORY REVIEW (retrieval due today) -------- */}
+        <div className="today-card" style={{ marginTop: 14, borderColor: 'rgba(198,161,91,0.28)' }}>
+          <p className="today-kind">Memory review{memory.due.length > 0 ? ` — ${memory.due.length} skill${memory.due.length === 1 ? '' : 's'} due` : ' — nothing due'}</p>
+          {memory.due.length === 0 ? (
+            <p className="muted" style={{ marginTop: 6, fontSize: 13.5 }}>Previously learned skills are being tested silently during your training. Nothing demands retrieval right now.</p>
+          ) : (
+            <>
+              {memory.due.slice(0, 3).map((d) => (
+                <p key={d.item.id} className="muted" style={{ fontSize: 13.5, margin: '7px 0 0' }}>
+                  {d.item.title} <span className="faint">· {AUTOMATICITY[d.item.automaticity]?.label}</span>
+                </p>
+              ))}
+              <Btn small variant="ghost" style={{ marginTop: 14 }} onClick={onMemoryReview}>Demonstrate them</Btn>
+            </>
+          )}
         </div>
 
         {/* -------- quiet context -------- */}

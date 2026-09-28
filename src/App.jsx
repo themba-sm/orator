@@ -6,6 +6,11 @@ import TrainSession from './screens/TrainSession.jsx';
 import Profile from './screens/Profile.jsx';
 import Progress from './screens/Progress.jsx';
 import Practise, { SpeakNow, Settings } from './screens/Practise.jsx';
+import MemoryHome from './screens/MemoryHome.jsx';
+import MemoryReview from './screens/MemoryReview.jsx';
+import Playbook from './screens/Playbook.jsx';
+import { todayMemoryReview } from './lib/memory-integration.js';
+import { first } from './lib/store.js';
 import { isOnboarded, baselineComplete, getProfile, update, resetAllData } from './lib/store.js';
 import { todaysExercise, practiseExercise } from './lib/generator.js';
 
@@ -25,6 +30,7 @@ function NavBar({ route, navigate }) {
   const items = [
     { key: 'home', label: 'Home', glyph: '·' },
     { key: 'train', label: 'Train', glyph: '»' },
+    { key: 'memory', label: 'Memory', glyph: '◆' },
     { key: 'profile', label: 'Patterns', glyph: '≡' },
     { key: 'progress', label: 'Progress', glyph: '↗' },
     { key: 'settings', label: 'Rules', glyph: '§' },
@@ -94,6 +100,21 @@ export default function App() {
         </div>
       </div>
     );
+  } else if (route === 'memory') {
+    screen = <MemoryHome onReview={() => navigate('review')} onPlaybook={() => navigate('playbook')} />;
+  } else if (route === 'review') {
+    screen = <MemoryReview onDone={() => navigate('memory')} />;
+  } else if (route === 'playbook') {
+    screen = (
+      <Playbook
+        onReview={() => navigate('review')}
+        onDrill={(itemId) => {
+          const mi = first('memoryItems', (m) => m.id === itemId);
+          if (mi && mi.apply_prompt) startExercise({ ...mi.apply_prompt, category: mi.apply_prompt.category || 'memory' }, 'memory-apply');
+          else navigate('review');
+        }}
+      />
+    );
   } else if (route === 'practise') {
     screen = <Practise onPick={(cat) => startExercise(practiseExercise(cat), 'practise')} />;
   } else if (route === 'speak') {
@@ -115,19 +136,13 @@ export default function App() {
     screen = <Settings onDifficultyChange={difficultyChange} onReset={hardReset} />;
   } else {
     // home — allow a hard refresh to re-pick today's exercise deterministically
-    screen = route === 'home' ? (
+    screen = (
       <Dashboard
         onStart={(ex) => startExercise(ex, 'daily')}
         onPractise={() => navigate('practise')}
         onSpeak={() => navigate('speak')}
         onProgress={() => navigate('progress')}
-      />
-    ) : (
-      <Dashboard
-        onStart={(ex) => startExercise(ex, 'daily')}
-        onPractise={() => navigate('practise')}
-        onSpeak={() => navigate('speak')}
-        onProgress={() => navigate('progress')}
+        onMemoryReview={() => navigate('review')}
       />
     );
   }

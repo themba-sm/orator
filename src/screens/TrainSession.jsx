@@ -17,6 +17,7 @@ import {
   getCurrentUser, getProfile, update, insert, recordWeaknessObservation,
   markWeaknessImproved, weaknessPatternsSorted, snapshotProgress,
 } from '../lib/store.js';
+import { ensureItemForWeakness, recordApplication, recordSpontaneousEvidence } from '../lib/memory-integration.js';
 
 export default function TrainSession({ exercise, kind = 'daily', onDone, onExit }) {
   const [stage, setStage] = useState('brief'); // brief | run1 | feedback | transcribe | retry | run2 | compare
@@ -29,6 +30,7 @@ export default function TrainSession({ exercise, kind = 'daily', onDone, onExit 
   const [audioUrl2, setAudioUrl2] = useState(null);
   const [retrySpec, setRetrySpec] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [memoryItem, setMemoryItem] = useState(null);
 
   const patterns = useMemo(() => weaknessPatternsSorted(), [stage]);
   const user = getCurrentUser();
@@ -112,6 +114,14 @@ export default function TrainSession({ exercise, kind = 'daily', onDone, onExit 
           attemptId: attempt.id,
         });
       }
+      // Error-based learning: the key weakness becomes ONE memory item (not three lessons).
+      const memItem = analysis.key.weaknessKey ? ensureItemForWeakness(analysis.key.weaknessKey) : null;
+      setMemoryItem(memItem);
+      // Silent tests: previously learned skills evaluated without being named (specs 18-19).
+      recordSpontaneousEvidence(analysis.measured, analysis.audio, {
+        excludeItemId: memItem ? memItem.id : null,
+        category: exercise.category,
+      });
       setAttempt1({ analysis, capture });
       setStage('feedback');
     } else {
@@ -179,7 +189,22 @@ export default function TrainSession({ exercise, kind = 'daily', onDone, onExit 
       });
     }
     setAttempt2({ analysis, capture });
-    setComparison(compareAttempts(attempt1.analysis, analysis, attempt1.analysis.key.weaknessKey));
+    const cmp = compareAttempts(attempt1.analysis, analysis, attempt1.analysis.key.weaknessKey);
+    if (memoryItem) {
+      // The retry WAS told the constraint — told application evidence.
+      recordApplication(memoryItem.id, {
+        measured: analysis.measured,
+        audio: analysis.audio,
+        success: cmp.improved.length > 0,
+        context: exercise.category,
+        told: true,
+      });
+    }
+    recordSpontaneousEvidence(analysis.measured, analysis.audio, {
+      excludeItemId: memoryItem ? memoryItem.id : null,
+      category: exercise.category,
+    });
+    setComparison(cmp);
     setStage('compare');
   }
 

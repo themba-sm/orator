@@ -21,6 +21,16 @@ const EMPTY_DB = {
   feedback: [],
   weaknessPatterns: [],
   progressSnapshots: [],
+  /* --- Memory & Automaticity Engine --- */
+  memoryItems: [],
+  memoryReviews: [],
+  memoryApplications: [],
+  skillRetrievalAttempts: [],
+  transferExercises: [],
+  interleavedExercises: [],
+  weaknessMemory: [],
+  playbookItems: [],
+  memorySnapshots: [],
   meta: {},
 };
 
@@ -213,4 +223,38 @@ export function yesterdaysDateISO() {
   const d = new Date();
   d.setDate(d.getDate() - 1);
   return d.toISOString().slice(0, 10);
+}
+
+
+/* ================= Memory & Automaticity Engine helpers ================= */
+
+export function memoryItemsFor(uid) {
+  return find('memoryItems', (m) => m.user_id === uid);
+}
+
+export function getMemoryItem(itemId) {
+  return first('memoryItems', (m) => m.id === itemId);
+}
+
+/* Link a weakness pattern to a memory item (error-based learning). */
+export function linkWeaknessMemory(weaknessKey, itemId) {
+  const uid = getCurrentUser()?.id;
+  const db = load();
+  const existing = db.weaknessMemory.find((w) => w.user_id === uid && w.weakness_key === weaknessKey && w.item_id === itemId);
+  if (!existing) insert('weaknessMemory', { user_id: uid, weakness_key: weaknessKey, item_id: itemId, linked_date: new Date().toISOString() });
+}
+
+export function weaknessMemoryLinks(weaknessKey) {
+  const uid = getCurrentUser()?.id;
+  return find('weaknessMemory', (w) => w.user_id === uid && w.weakness_key === weaknessKey);
+}
+
+/* Record a memory snapshot (end of review session / weekly). */
+export function memorySnapshot(items, kind, note) {
+  return insert('memorySnapshots', {
+    user_id: getCurrentUser()?.id,
+    kind,
+    note: note || '',
+    items: items.map((i) => ({ item_id: i.id, title: i.title, automaticity: i.automaticity, retention: i.retention })),
+  });
 }

@@ -14,6 +14,7 @@ import {
   getCurrentUser, getProfile, update, insert, recordWeaknessObservation,
   weaknessPatternsSorted, completedAttempts,
 } from '../lib/store.js';
+import { seedFromWeaknessPatterns, seedVocabulary } from '../lib/memory-integration.js';
 
 export default function Baseline({ onDone }) {
   const [index, setIndex] = useState(0);
@@ -130,6 +131,9 @@ export default function Baseline({ onDone }) {
       completed: true,
     });
     const patternsNow = weaknessPatternsSorted();
+    // Memory engine: top observed weaknesses become the first Memory Items (spec 12).
+    seedFromWeaknessPatterns();
+    seedVocabulary(['concise', 'articulate']);
     setProfileResult({ scores, patterns: patternsNow });
     setFinished(true);
   }
