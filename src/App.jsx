@@ -14,6 +14,10 @@ import PressureHome from './screens/PressureHome.jsx';
 import PressureRun from './screens/PressureRun.jsx';
 import SpeechLabHome from './screens/SpeechLabHome.jsx';
 import SpeechLabRun from './screens/SpeechLabRun.jsx';
+import VocabLab from './screens/VocabLab.jsx';
+import StoryLab from './screens/StoryLab.jsx';
+import PersuasionLab from './screens/PersuasionLab.jsx';
+import MixedSession from './screens/MixedSession.jsx';
 import MemoryReview from './screens/MemoryReview.jsx';
 import Playbook from './screens/Playbook.jsx';
 import { todayMemoryReview } from './lib/memory-integration.js';
@@ -161,11 +165,23 @@ export default function App() {
         onStart={(cfg) => { setSpeechRun(cfg); navigate('speechlab'); }}
       />
     );
+  } else if (route === 'vocab') {
+    screen = <VocabLab onDone={() => navigate('lab')} />;
+  } else if (route === 'story') {
+    screen = <StoryLab onDone={() => navigate('lab')} />;
+  } else if (route === 'persuasion') {
+    screen = <PersuasionLab onDone={() => navigate('lab')} />;
+  } else if (route === 'mixed') {
+    screen = <MixedSession onDone={() => navigate('home')} />;
   } else if (route === 'lab') {
     screen = (
       <LabHome
         onPressure={() => navigate('pressure')}
         onSpeech={() => navigate('speechlab')}
+        onVocab={() => navigate('vocab')}
+        onStory={() => navigate('story')}
+        onPersuasion={() => navigate('persuasion')}
+        onMixed={() => navigate('mixed')}
         onChallenge={(c) => {
           setSpeechRun({ type: c.type, seconds: c.seconds, prep: 180, audience: { key: 'neutral', label: 'Neutral', hint: 'Quiet. Difficult to read.', weights: {}, qaStyle: '' }, prompt: '', isChallenge: true, coach: null });
           navigate('speechlab');

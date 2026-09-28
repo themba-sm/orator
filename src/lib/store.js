@@ -38,6 +38,18 @@ const EMPTY_DB = {
   /* --- Pressure Room & Public Speaking Lab --- */
   pressureRuns: [],
   speeches: [],
+  /* --- Vocabulary / Storytelling / Persuasion Labs --- */
+  vocabularyAttempts: [],
+  vocabularyApplications: [],
+  overusedWords: [],
+  precisionCorrections: [],
+  stories: [],
+  storyAttempts: [],
+  storyReviews: [],
+  persuasionAttempts: [],
+  audienceProfiles: [],
+  transferExercises: [],
+  communicationPatterns: [],
   meta: {},
 };
 
