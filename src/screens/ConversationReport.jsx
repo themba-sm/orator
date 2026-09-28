@@ -79,7 +79,7 @@ export default function ConversationReport({ convRecord, scenario, turns, report
     const measured = analyseAttempt({
       transcript, transcriptSource: capture.transcriptSource, durationMs: capture.durationMs,
       targetSeconds: 30, prompt: retryTurn.turn.text, category: 'conversation',
-    });
+    }).measured;
     const cmp = compareAttempts(
       { measured: retryTurn.turn.analysis.measured, audio: null },
       { measured, audio: audioDeliveryMetrics(capture.energies, capture.durationMs) },

@@ -32,7 +32,7 @@ export default function Baseline({ onDone }) {
   function analyseCapture(capture, transcriptOverride) {
     const transcript = transcriptOverride !== undefined ? transcriptOverride : capture.transcript;
     const source = transcriptOverride !== undefined ? 'self-transcribed' : capture.transcriptSource;
-    const measured = analyseAttempt({
+    const result = analyseAttempt({
       transcript,
       transcriptSource: source,
       durationMs: capture.durationMs,
@@ -40,6 +40,7 @@ export default function Baseline({ onDone }) {
       prompt: challenge.prompt,
       category: challenge.category,
     });
+    const measured = result.measured;
     const audio = audioDeliveryMetrics(capture.energies, capture.durationMs);
     const key = selectKeyWeakness(measured, audio, { category: challenge.category }, patterns);
     return { measured, audio, key };

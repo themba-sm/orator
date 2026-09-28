@@ -54,7 +54,7 @@ export default function TrainSession({ exercise, kind = 'daily', onDone, onExit 
       targetSeconds,
       prompt,
       category: exercise.category,
-    });
+    }).measured;
     const audio = audioDeliveryMetrics(capture.energies, capture.durationMs);
     const key = selectKeyWeakness(measured, audio, { category: exercise.category }, patterns);
     return { measured, audio, key, transcript: transcript || '', attemptNumber };
@@ -172,7 +172,7 @@ export default function TrainSession({ exercise, kind = 'daily', onDone, onExit 
       : null;
     if (!analysis) {
       // no transcript for the retry: compare on duration only, honestly
-      const measured = analyseAttempt({ transcript: '', transcriptSource: 'unavailable', durationMs: capture.durationMs, targetSeconds: retrySpec.speakSeconds, prompt: exercise.prompt, category: exercise.category });
+      const measured = analyseAttempt({ transcript: '', transcriptSource: 'unavailable', durationMs: capture.durationMs, targetSeconds: retrySpec.speakSeconds, prompt: exercise.prompt, category: exercise.category }).measured;
       setAttempt2({ analysis: { measured, audio: audioDeliveryMetrics(capture.energies, capture.durationMs), key: null }, capture });
       setComparison(compareAttempts(attempt1.analysis, { measured, audio: audioDeliveryMetrics(capture.energies, capture.durationMs) }, attempt1.analysis.key.weaknessKey));
       setStage('compare');

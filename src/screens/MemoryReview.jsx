@@ -168,7 +168,7 @@ export default function MemoryReview({ onDone }) {
       targetSeconds: ex.speakSeconds,
       prompt: ex.prompt,
       category: 'memory',
-    });
+    }).measured;
     const audio = audioDeliveryMetrics(capture.energies, capture.durationMs);
     if (type === 'apply') recordApplication(item.id, { measured, audio, context: 'review' });
     else if (type === 'transfer') recordTransfer(item.id, { context: currentContext, measured, audio });

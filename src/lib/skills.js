@@ -35,12 +35,12 @@ export function initialSkillScores(attemptAnalyses) {
 
   attemptAnalyses.forEach(({ measured, audio }) => {
     const m = measured;
-    if (m.fillerRate !== null) scores.fluency = (scores.fluency ?? 50) - Math.min(25, m.fillerRate * 4);
+    if (m.fillerRate != null) scores.fluency = (scores.fluency ?? 50) - Math.min(25, m.fillerRate * 4);
     if (m.wpm) scores.clarity = (scores.clarity ?? 50) + (m.wpm >= 120 && m.wpm <= 165 ? 8 : m.wpm > 175 ? -10 : -4);
     if (m.openingDirectness !== null) scores.clarity = (scores.clarity ?? 50) + (m.openingDirectness > 0.5 ? 8 : m.openingDirectness < 0.3 ? -8 : 0);
     if (m.structureHits >= 2) scores.thoughtOrganisation = (scores.thoughtOrganisation ?? 50) + 8;
     if (m.wordCount >= 40 && m.structureHits === 0) scores.thoughtOrganisation = (scores.thoughtOrganisation ?? 50) - 10;
-    if (m.vagueRate !== null) scores.wordPrecision = (scores.wordPrecision ?? 50) - Math.min(20, m.vagueRate * 3);
+    if (m.vagueRate != null) scores.wordPrecision = (scores.wordPrecision ?? 50) - Math.min(20, m.vagueRate * 3);
     if (m.exampleHits >= 1) scores.storytelling = (scores.storytelling ?? 50) + 8;
     if (m.relevance !== null) scores.responseSpeed = (scores.responseSpeed ?? 50) + (m.relevance > 0.5 ? 8 : m.relevance < 0.2 ? -10 : 0);
     if (m.avgSentenceLen) scores.sentenceConstruction = (scores.sentenceConstruction ?? 50) + (m.avgSentenceLen <= 20 ? 8 : m.avgSentenceLen >= 26 ? -10 : 0);
@@ -53,9 +53,10 @@ export function initialSkillScores(attemptAnalyses) {
     else if (m.durationSeconds && m.targetSeconds) scores.conciseness = (scores.conciseness ?? 50) - 5;
   });
 
-  // normalise to 5-95
+  // normalise to 5-95; anything non-finite was never measured
   Object.keys(scores).forEach((k) => {
-    if (scores[k] !== null) scores[k] = Math.round(Math.max(5, Math.min(95, scores[k])));
+    if (scores[k] === null) return;
+    scores[k] = Number.isFinite(scores[k]) ? Math.round(Math.max(5, Math.min(95, scores[k]))) : null;
   });
   return scores;
 }
