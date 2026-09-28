@@ -303,3 +303,16 @@ input, textarea, select { font-family: inherit; }
   .wrap { padding: 0 32px; }
   .compare-grid, .measure-grid, .option-grid, .stat-strip { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Pressure Room & Lab */
+.pressure-screen { background: linear-gradient(180deg, var(--ink) 0%, #0C0A06 100%); min-height: 100vh; }
+.pressure-screen .display, .pressure-screen .brief-prompt, .pressure-screen .brief-title { color: var(--paper); }
+.pressure-screen .muted { color: rgba(240,234,222,0.75); }
+.pressure-screen .faint { color: rgba(240,234,222,0.55); }
+.pressure-screen .eyebrow { color: var(--brass) !important; }
+.pressure-screen .panel { background: rgba(255,255,255,0.05); border: 1px solid rgba(198,161,91,0.35); }
+.pressure-screen .attempt-row { border-color: rgba(255,255,255,0.14); }
+.pressure-screen .rule { border-color: rgba(255,255,255,0.14); }
+.pressure-mark { width: 34px; height: 3px; background: var(--brass); margin-bottom: 14px; }
+.interrupt-prompt { color: var(--crimson-light, #E06A72) !important; }
+.pressure-door { border-color: rgba(198,161,91,0.5); }

@@ -557,7 +557,7 @@ export function nextLine(conv, turnIndex, lastSignals, lastTranscript, askedType
 /* ================= Per-turn analysis ================= */
 
 export function analyseTurn(transcript, transcriptSource, durationMs, aiLine, category) {
-  const measured = analyseAttempt({
+  const result = analyseAttempt({
     transcript,
     transcriptSource,
     durationMs,
@@ -565,6 +565,7 @@ export function analyseTurn(transcript, transcriptSource, durationMs, aiLine, ca
     prompt: aiLine,
     category: category || 'conversation',
   });
+  const measured = result.measured;
   const signals = extractSignals(measured, transcript);
   return { measured, signals };
 }

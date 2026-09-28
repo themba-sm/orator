@@ -35,6 +35,9 @@ const EMPTY_DB = {
   conversations: [],
   conversationTurns: [],
   conversationReports: [],
+  /* --- Pressure Room & Public Speaking Lab --- */
+  pressureRuns: [],
+  speeches: [],
   meta: {},
 };
 

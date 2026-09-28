@@ -9,6 +9,11 @@ import Practise, { SpeakNow, Settings } from './screens/Practise.jsx';
 import MemoryHome from './screens/MemoryHome.jsx';
 import ConverseHome from './screens/ConverseHome.jsx';
 import Conversation from './screens/Conversation.jsx';
+import LabHome from './screens/LabHome.jsx';
+import PressureHome from './screens/PressureHome.jsx';
+import PressureRun from './screens/PressureRun.jsx';
+import SpeechLabHome from './screens/SpeechLabHome.jsx';
+import SpeechLabRun from './screens/SpeechLabRun.jsx';
 import MemoryReview from './screens/MemoryReview.jsx';
 import Playbook from './screens/Playbook.jsx';
 import { todayMemoryReview } from './lib/memory-integration.js';
@@ -33,6 +38,7 @@ function NavBar({ route, navigate }) {
     { key: 'home', label: 'Home', glyph: '·' },
     { key: 'train', label: 'Train', glyph: '»' },
     { key: 'converse', label: 'Converse', glyph: '@' },
+    { key: 'lab', label: 'Lab', glyph: '▣' },
     { key: 'memory', label: 'Memory', glyph: '◆' },
     { key: 'profile', label: 'Patterns', glyph: '≡' },
     { key: 'progress', label: 'Progress', glyph: '↗' },
@@ -56,6 +62,8 @@ export default function App() {
   const [drawn, setDrawn] = useState(null); // for the Speak action
   const [sessionKind, setSessionKind] = useState('daily');
   const [conversation, setConversation] = useState(null); // { mode, difficulty, coached }
+  const [pressureRun, setPressureRun] = useState(null); // { mode, level }
+  const [speechRun, setSpeechRun] = useState(null); // config
 
   const ready = isOnboarded() && baselineComplete();
 
@@ -120,6 +128,47 @@ export default function App() {
         onStart={(mode, difficulty, coached) => {
           setConversation({ mode, difficulty, coached, ts: Date.now() });
           navigate('converse');
+        }}
+      />
+    );
+  } else if (route === 'pressure' && pressureRun) {
+    screen = (
+      <PressureRun
+        mode={pressureRun.mode}
+        level={pressureRun.level}
+        onExit={() => { setPressureRun(null); navigate('pressure'); }}
+        onDone={() => { setPressureRun(null); navigate('lab'); }}
+      />
+    );
+  } else if (route === 'pressure') {
+    screen = (
+      <PressureHome
+        onStart={(modeKey, level) => { setPressureRun({ mode: modeKey, level }); navigate('pressure'); }}
+      />
+    );
+  } else if (route === 'speechlab' && speechRun) {
+    screen = (
+      <SpeechLabRun
+        config={speechRun}
+        onExit={() => { setSpeechRun(null); navigate('speechlab'); }}
+        onDone={() => { setSpeechRun(null); navigate('lab'); }}
+      />
+    );
+  } else if (route === 'speechlab') {
+    screen = (
+      <SpeechLabHome
+        preset={null}
+        onStart={(cfg) => { setSpeechRun(cfg); navigate('speechlab'); }}
+      />
+    );
+  } else if (route === 'lab') {
+    screen = (
+      <LabHome
+        onPressure={() => navigate('pressure')}
+        onSpeech={() => navigate('speechlab')}
+        onChallenge={(c) => {
+          setSpeechRun({ type: c.type, seconds: c.seconds, prep: 180, audience: { key: 'neutral', label: 'Neutral', hint: 'Quiet. Difficult to read.', weights: {}, qaStyle: '' }, prompt: '', isChallenge: true, coach: null });
+          navigate('speechlab');
         }}
       />
     );
