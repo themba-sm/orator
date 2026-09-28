@@ -18,6 +18,10 @@ window.addEventListener('error', (e) => showDiagError('ERROR: ' + (e.error?.stac
 window.addEventListener('unhandledrejection', (e) => showDiagError('REJECTION: ' + (e.reason?.stack || e.reason)));
 // --- end diagnostic ---
 
+if (new URLSearchParams(window.location.search).get('reset') === '1') {
+  localStorage.clear();
+}
+
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />

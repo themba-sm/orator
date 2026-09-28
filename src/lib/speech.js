@@ -55,35 +55,53 @@ export async function startCapture(opts = {}) {
   let recognitionWorking = false;
   const segmentTimes = [];
 
-  if (SR) {
-    recognition = new SR();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = navigator.language || 'en-US';
-    recognition.onresult = (event) => {
+  // Mobile Chrome (and others) silently end SpeechRecognition after a few
+  // seconds of ambiguous audio, even with continuous=true — the mic UI can
+  // keep showing "recording" while transcription has actually stopped. We
+  // detect that and restart it transparently until stop()/cancel() is called.
+  let captureEnded = false;
+  let fatalMicError = false;
+
+  function attachRecognition() {
+    const r = new SR();
+    r.continuous = true;
+    r.interimResults = true;
+    r.lang = navigator.language || 'en-US';
+    r.onresult = (event) => {
       recognitionWorking = true;
       let interim = '';
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
-        const r = event.results[i];
-        const seg = { text: r[0].transcript, isFinal: r.isFinal, t: Math.round(performance.now() - startedAt) };
-        if (r.isFinal) {
+        const res = event.results[i];
+        const seg = { text: res[0].transcript, isFinal: res.isFinal, t: Math.round(performance.now() - startedAt) };
+        if (res.isFinal) {
           finalSegments.push(seg);
           segmentTimes.push(seg.t);
           if (opts.onTranscript) opts.onTranscript(finalSegments.map((s) => s.text).join(' '), true);
         } else {
-          interim += r[0].transcript;
+          interim += res[0].transcript;
         }
       }
       if (opts.onInterim && interim) opts.onInterim(interim);
     };
-    recognition.onerror = (e) => {
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') recognition = null;
-      // 'no-speech' and network errors: leave transcript empty; analysis stays honest.
+    r.onerror = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') fatalMicError = true;
+      // 'no-speech' and network errors: leave transcript empty; onend below restarts it.
     };
-    try { recognition.start(); } catch { recognition = null; }
+    r.onend = () => {
+      if (captureEnded || fatalMicError) return;
+      // Recognition stopped on its own mid-attempt — restart immediately so the
+      // rest of the answer still gets transcribed instead of going silent.
+      try { recognition = attachRecognition(); recognition.start(); } catch { /* give up quietly */ }
+    };
+    return r;
+  }
+
+  if (SR) {
+    try { recognition = attachRecognition(); recognition.start(); } catch { recognition = null; }
   }
 
   async function stop() {
+    captureEnded = true;
     window.clearInterval(energyTimer);
     try { if (recognition) recognition.stop(); } catch { /* already stopped */ }
     recorder.state !== 'inactive' && recorder.stop();
@@ -106,6 +124,7 @@ export async function startCapture(opts = {}) {
   }
 
   function cancel() {
+    captureEnded = true;
     window.clearInterval(energyTimer);
     try { if (recognition) recognition.abort(); } catch { /* noop */ }
     try { if (recorder.state !== 'inactive') recorder.stop(); } catch { /* noop */ }
