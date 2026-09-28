@@ -14,6 +14,7 @@ export default function SpeakRunner({ exercise, onComplete, onCancel, mode = 'no
   const [interim, setInterim] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState(null);
+  const [typed, setTyped] = useState('');
   const captureRef = useRef(null);
   const caps = speechCapabilities();
 
@@ -53,6 +54,14 @@ export default function SpeakRunner({ exercise, onComplete, onCancel, mode = 'no
     }
   }
 
+  function submitTyped() {
+    const text = typed.trim();
+    if (text.split(/\s+/).length < 3) return;
+    const durationMs = Math.max(4000, Math.round(text.split(/\s+/).length * 380));
+    onComplete({ capture: { transcript: text, transcriptSource: 'self-transcribed', durationMs, energies: null } });
+    setTyped('');
+  }
+
   async function finishSpeak() {
     if (!captureRef.current) return;
     setStage('stopping');
@@ -87,6 +96,17 @@ export default function SpeakRunner({ exercise, onComplete, onCancel, mode = 'no
               <p className="faint" style={{ marginTop: 12 }}>
                 This browser does not expose microphone recording — ORATOR needs Chrome, Edge, Safari or Firefox.
               </p>
+            )}
+            {(error || !caps.mic) && (
+              <div style={{ marginTop: 14 }}>
+                <p className="faint" style={{ fontSize: 12.5, marginBottom: 6 }}>
+                  No microphone? Type what you would say. Metrics that need audio will be honestly omitted.
+                </p>
+                <textarea className="textarea-input" rows="4" value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="What you would have said…" />
+                <div className="trainer-controls" style={{ marginTop: 10 }}>
+                  <Btn onClick={submitTyped} disabled={typed.trim().split(/\s+/).length < 3}>Submit as spoken</Btn>
+                </div>
+              </div>
             )}
             <div className="trainer-controls">
               {onCancel && <Btn variant="ghost" onClick={onCancel}>Exit</Btn>}
