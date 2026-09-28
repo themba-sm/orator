@@ -53,13 +53,15 @@ export function communicationSignature() {
   const uid = getCurrentUser()?.id;
   const speeches = find('speeches', (s) => s.user_id === uid);
   const turns = find('conversationTurns', (t) => t.speaker === 'user').map((t) => t.text || '');
-  const attempts = [...find('exerciseAttempts', (a) => a.user_id === uid).map((a) => a.transcript || ''), ...find('speechAttempts', (a) => a.user_id === uid).map((a) => a.transcript || '')];
-  const corpus = [...speeches.map((s) => s.transcript || ''), ...turns, ...attempts];
+  const attempts = [...find('exerciseAttempts', (a) => a.user_id === uid).map((a) => a.transcript || a.measured?.transcript || ''), ...find('speechAttempts', (a) => a.user_id === uid).map((a) => a.transcript || '')];
+  const corpus = [...speeches.map((s) => s.transcript || ''), ...turns, ...attempts].filter((t) => t && t.trim().length > 10);
   const total = corpus.length;
   if (total < 3) return null; // not enough evidence to describe anyone
 
-  const words = corpus.join(' ').split(/\s+/).length;
-  const sentences = corpus.join(' ').split(/[.!?]+/).filter((s) => s.trim().length > 2).length;
+  const joined = corpus.join(' ');
+  const words = joined.split(/\s+/).length;
+  const sentences = joined.split(/[.!?]+/).filter((s) => s.trim().length > 2).length;
+  if (sentences < 5) return null; // sentence-level claims need real sentences
   const avgSentence = Math.round(words / Math.max(1, sentences));
 
   const freq = {};
@@ -69,7 +71,7 @@ export function communicationSignature() {
   const top = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 5).map((e) => e[0]);
 
   const storyRate = corpus.filter((t) => /\b(when i|so there was|one time|it started when)\b/i.test(t)).length / total;
-  const claimRate = corpus.filter((t) => /\b(i think|i believe|my position|should)\b/i.test(t)).length / total;
+  const claimRate = corpus.filter((t) => /\b(i think|i believe|my position|it is better|should)\b/i.test(t)).length / total;
 
   const traits = [];
   if (avgSentence > 24) traits.push(`Builds long sentences (average ${avgSentence} words) — dense, and listeners can lose the thread.`);
